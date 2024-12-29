@@ -26,17 +26,17 @@ ____
 
 ## **1.1 Základný opis tabuľky**
 
-+ <mark>**Artist**</mark>: Obsahuje informácie o umelcovi. Obsahuje jedinečný identifikátor a názov.
-+ <mark>**Album**</mark>: Ukladá údaje o hudobných albumoch spojených s umelcami.
-+ <mark>**Track**</mark>: Hlavná tabuľka s informáciami o skladbe vrátane žánru, albumu, ceny a trvania.
-+ <mark>**Genre**</mark>: Zoznam hudobných žánrov.
-+ <mark>**MediaType**</mark>: Opis dostupných formátov mediálneho obsahu.
-+ <mark>**Playlist**</mark>: Zoznam zoznamov skladieb vytvorených používateľmi.
-+ <mark>**PlaylistTrack**</mark>: Prepojenie skladieb so zoznamami skladieb.
-+ <mark>**Invoice**</mark>: Informácie o objednávkach zákazníkov.
-+ <mark>**InvoiceLine**</mark>: Podrobnosti o každom riadku objednávky.
-+ <mark>**Customer**</mark>: Údaje o zákazníkovi vrátane kontaktných informácií.
-+ <mark>**Employee**</mark>: Informácie o zamestnancoch.
++ **Artist**: Obsahuje informácie o umelcovi. Obsahuje jedinečný identifikátor a názov.
++ **Album**: Ukladá údaje o hudobných albumoch spojených s umelcami.
++ **Track**: Hlavná tabuľka s informáciami o skladbe vrátane žánru, albumu, ceny a trvania.
++ **Genre**: Zoznam hudobných žánrov.
++ **MediaType**: Opis dostupných formátov mediálneho obsahu.
++ **Playlist**: Zoznam zoznamov skladieb vytvorených používateľmi.
++ **PlaylistTrack**: Prepojenie skladieb so zoznamami skladieb.
++ **Invoice**: Informácie o objednávkach zákazníkov.
++ **InvoiceLine**</mark>: Podrobnosti o každom riadku objednávky.
++ **Customer**: Údaje o zákazníkovi vrátane kontaktných informácií.
++ **Employee**: Informácie o zamestnancoch.
 
 ____
 
@@ -58,29 +58,29 @@ ____
 
 ## **2. Dimenzionálny model**
 
-Na efektívnu analýzu bol navrhnutý **hviezdicový model (hviezdicová schéma)**, ktorého stredobodom je tabuľka <mark>**Fact_Invoice**</mark> obsahujúca informácie o predaji hudobných skladieb.
+Na efektívnu analýzu bol navrhnutý **hviezdicový model (hviezdicová schéma)**, ktorého stredobodom je tabuľka **Fact_Invoice** obsahujúca informácie o predaji hudobných skladieb.
 
 Hlavné metriky v tabuľke fact sú:
 
-+ <mark>**Fact_InvoiceId**</mark>: jedinečný kľúč faktúry.
-+ <mark>**Quantity**</mark>: Počet zakúpených skladieb.
-+ <mark>**UnitPrice**</mark>: Cena za skladbu.
-+ <mark>**TotalAmount**</mark>: Celková suma faktúry.
-+ <mark>**Dim_TrackId**</mark>: Odkaz na hudobnú skladbu spojenú s týmto plemenom z dimenzionálnej tabuľky <mark>**Dim_Track**</mark>.
-+ <mark>**Dim_TimeId**</mark>: Odkaz na čas uskutočnenia transakcie z dimenzionálnej tabuľky <mark>**Dim_Time**</mark>.
-+ <mark>**Dim_DateId**</mark>: Odkaz na dátum spojený s transakciou z dimenzionálnej tabuľky <mark>**Dim_Date**</mark>.
-+ <mark>**Dim_CustomerId**</mark>: Odkaz na zákazníka z dimenzionálnej tabuľky <mark>**Dim_Customer**</mark>. 
-+ <mark>**Dim_AddressId**</mark>: Odkaz na adresu, na ktorej bol nákup uskutočnený, z dimenzionálnej tabuľky <mark>**Dim_Address**</mark>.
-+ <mark>**Dim_EmployeeId**</mark>: Odkaz na zamestnanca z tabuľky <mark>**Dim_Employee**</mark>.
++ **Fact_InvoiceId**: jedinečný kľúč faktúry.
++ **Quantity**: Počet zakúpených skladieb.
++ **UnitPrice**: Cena za skladbu.
++ **TotalAmount**: Celková suma faktúry.
++ **Dim_TrackId**: Odkaz na hudobnú skladbu spojenú s týmto plemenom z dimenzionálnej tabuľky **Dim_Track**.
++ **Dim_TimeId**: Odkaz na čas uskutočnenia transakcie z dimenzionálnej tabuľky **Dim_Time**.
++ **Dim_DateId**: Odkaz na dátum spojený s transakciou z dimenzionálnej tabuľky **Dim_Date**.
++ **Dim_CustomerId**: Odkaz na zákazníka z dimenzionálnej tabuľky **Dim_Customer**. 
++ **Dim_AddressId**: Odkaz na adresu, na ktorej bol nákup uskutočnený, z dimenzionálnej tabuľky **Dim_Address**.
++ **Dim_EmployeeId**: Odkaz na zamestnanca z tabuľky **Dim_Employee**.
 
 Faktová tabuľka <mark>**Fact_Invoice**</mark> je prepojená s nasledujúcimi dimenziami:
 
-+ <mark>**Dim_Customer**</mark>: Obsahuje informácie o zákazníkovi (jedinečné ID zákazníka, meno, adresu, kontaktné údaje atď.). Tabuľka <mark>**Fact_Invoice**</mark> používa pole <mark>**Dim_CustomerId**</mark> na komunikáciu s tabuľkou <mark>**Dim_Customer**</mark>. Toto pole udáva, ktorý zákazník uskutočnil nákup. **Dimenzia typu 2 (SCD2)** - Predpokladá sa, že zákazníci môžu meniť informácie (napríklad adresu alebo kontaktné údaje) a ukladá sa história zmien.
-+ <mark>**Dim_Employee**</mark>: Obsahuje informácie o zamestnancoch (meno, priezvisko, titul, adresa a ďalšie údaje). Tabuľka <mark>**Fact_Invoice**</mark> používa pole <mark>**Dim_EmployeeId**</mark> na prepojenie s tabuľkou <mark>**Dim_Employee**</mark>, aby uviedla, ktorý zamestnanec spracoval nákup. **Dimenzia typu 2 (SCD2)** - Informácie o zamestnancovi sa môžu meniť (napríklad zmena názvu pracovnej pozície alebo adresy) a tieto zmeny sa musia zachovať.
-+ <mark>**Dim_Track**</mark>: Obsahuje údaje o hudobnej skladbe (názov, trvanie, žáner a ďalšie atribúty). Tabuľka <mark>**Fact_Invoice**</mark> používa pole <mark>**Dim_TrackId**</mark> na prepojenie s tabuľkou <mark>**Dim_Track**</mark>, aby uviedla, ktorá hudobná skladba bola predaná. **Dimenzia typu 1 (SCD1)** - zmeny informácií o skladbe si nevyžadujú uloženie historických údajov, pretože neovplyvňujú analýzu.
-+ <mark>**Dim_Address**</mark>: Obsahuje informácie o adrese transakcie. Tabuľka <mark>**Fact_Invoice**</mark> používa pole <mark>**Dim_AddressId**</mark> na prepojenie s tabuľkou <mark>**Dim_Address**</mark>, ktorá sa používa na určenie adresy, na ktorej sa uskutočnil nákup na trati. **Dimenzia typu 1 (SCD1)** - adresa uvádza len miesto, kde bol nákup uskutočnený, a nemení sa, história zmien nie je potrebná, pre každú transakciu je aktuálna adresa pevne stanovená.
-+ <mark>**Dim_Date**</mark>: Obsahuje dátum nákupu (deň, mesiac, rok, štvrťrok, deň v týždni atď.). Tabuľka <mark>**Fact_Invoice**</mark> používa pole <mark>**Dim_DateId**</mark> na označenie dátumu uskutočnenia nákupu. **Dimenzia typu 1 (SCD1)** - údaje kalendára sa nemenia, takže nie je potrebné uchovávať históriu zmien.
-+ <mark>**Dim_Time**</mark>: Obsahuje podrobné časové údaje (hodiny, AM/PM). Tabuľka <mark>**Fact_Invoice**</mark> používa pole <mark>**Dim_TimeId**</mark> na uvedenie presného času uskutočnenia platby. **Typ dimenzie Typ 1 (SCD1)** - časové údaje sa nemenia a nie je potrebné ukladať históriu.
++ **Dim_Customer**: Obsahuje informácie o zákazníkovi (jedinečné ID zákazníka, meno, adresu, kontaktné údaje atď.). Tabuľka **Fact_Invoice** používa pole **Dim_CustomerId** na komunikáciu s tabuľkou <mark>**Dim_Customer**. Toto pole udáva, ktorý zákazník uskutočnil nákup. **Dimenzia typu 2 (SCD2)** - Predpokladá sa, že zákazníci môžu meniť informácie (napríklad adresu alebo kontaktné údaje) a ukladá sa história zmien.
++ **Dim_Employee**: Obsahuje informácie o zamestnancoch (meno, priezvisko, titul, adresa a ďalšie údaje). Tabuľka **Fact_Invoice** používa pole **Dim_EmployeeId** na prepojenie s tabuľkou **Dim_Employee**, aby uviedla, ktorý zamestnanec spracoval nákup. **Dimenzia typu 2 (SCD2)** - Informácie o zamestnancovi sa môžu meniť (napríklad zmena názvu pracovnej pozície alebo adresy) a tieto zmeny sa musia zachovať.
++ **Dim_Track**: Obsahuje údaje o hudobnej skladbe (názov, trvanie, žáner a ďalšie atribúty). Tabuľka **Fact_Invoice** používa pole **Dim_TrackId** na prepojenie s tabuľkou **Dim_Track**, aby uviedla, ktorá hudobná skladba bola predaná. **Dimenzia typu 1 (SCD1)** - zmeny informácií o skladbe si nevyžadujú uloženie historických údajov, pretože neovplyvňujú analýzu.
++ **Dim_Address**: Obsahuje informácie o adrese transakcie. Tabuľka **Fact_Invoice** používa pole **Dim_AddressId** na prepojenie s tabuľkou **Dim_Address**, ktorá sa používa na určenie adresy, na ktorej sa uskutočnil nákup na trati. **Dimenzia typu 1 (SCD1)** - adresa uvádza len miesto, kde bol nákup uskutočnený, a nemení sa, história zmien nie je potrebná, pre každú transakciu je aktuálna adresa pevne stanovená.
++ **Dim_Date**: Obsahuje dátum nákupu (deň, mesiac, rok, štvrťrok, deň v týždni atď.). Tabuľka **Fact_Invoice** používa pole **Dim_DateId** na označenie dátumu uskutočnenia nákupu. **Dimenzia typu 1 (SCD1)** - údaje kalendára sa nemenia, takže nie je potrebné uchovávať históriu zmien.
++ **Dim_Time**: Obsahuje podrobné časové údaje (hodiny, AM/PM). Tabuľka **Fact_Invoice** používa pole **Dim_TimeId** na uvedenie presného času uskutočnenia platby. **Typ dimenzie Typ 1 (SCD1)** - časové údaje sa nemenia a nie je potrebné ukladať históriu.
 
 Štruktúra modelu hviezdy je znázornená na nasledujúcom obrázku. Diagram znázorňuje vzťahy medzi tabuľkou faktov a meraniami, čo uľahčuje pochopenie a implementáciu modelu.
 
