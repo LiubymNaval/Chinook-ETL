@@ -102,12 +102,14 @@ ____
 
 V prvom kroku procesu ETL sa údaje extrahujú z externého zdroja a načítajú do programu **Snowflake** pomocou príkazov SQL, ktoré sa vykonávajú priamo v **Worksheets**. To sa vykoná importovaním súboru **Chinook_MySql.sql** do **Worksheets** a následným vykonaním všetkých príkazov.
 
-Základné príkazy SQL používané v procese Extract:
+Základné príkazy SQL používané v procese **Extract**:
 
 1.	**CREATE DATABASE/SCHEMA** a **USE DATABASE/SCHEMA**
+
 Príkazy **CREATE DATABASE/SCHEMA** sa používajú na vytvorenie databázy **CHINOOK** a jej schémy v programe **Snowflake**. A príkazy **USE DATABASE/SCHEMA** umožňujú používať vytvorenú databázu a schému na ďalšie transformácie.
+
 Príklady príkazov:
-```
+```sql 
 CREATE DATABASE BISON_CHINOOK;
 CREATE SCHEMA BISON_CHINOOK_SCHEMA;
 USE DATABASE BISON_CHINOOK;
@@ -115,9 +117,11 @@ USE SCHEMA BISON_CHINOOK_SCHEMA;
 ```
 
 2.	**CREATE TABLE**
+
 Príkaz **CREATE TABLE** sa používa na vytvorenie štruktúry tabuľky v databáze. Vytvorí sa napríklad tabuľka **Album**, ktorá bude obsahovať informácie o hudobných albumoch. Príkaz definuje štruktúru tabuľky vrátane názvov stĺpcov, ich dátových typov, obmedzení a kľúčov.
+
 Príklad príkazu:
-```
+```sql 
 CREATE TABLE `Album`.
 (
     `AlbumId` INT NOT NULL,
@@ -129,9 +133,11 @@ CREATE TABLE `Album`.
 Ostatné tabuľky sa vytvoria rovnakým spôsobom.
 
 3. **INSERT INTO**
+
 Príkaz **INSERT INTO** sa používa na pridanie údajov do tabuľky. Tento príkaz sa používa napríklad na vloženie údajov do tabuľky **Genre**, ktorá obsahuje informácie o hudobných žánroch.
+
 Príklad príkazu:
-```
+```sql 
 INSERT INTO `Genre` (`GenreId`, `Name`) VALUES
     (1, 'Rock'),
     (2, „Jazz“),
@@ -175,8 +181,9 @@ Typ **dimenzie 2 (SCD2)** - informácie o zamestnancovi sa môžu meniť (napr. 
 + **EndDate** - dátum ukončenia platnosti záznamu (zvyčajne NULL, ak je záznam aktuálny).
 + **IsCurrent** - príznak označujúci relevantnosť záznamu (napríklad 1 pre aktuálny záznam a 0 pre neaktuálny záznam).
 V budúcnosti pomôže pri načítavaní údajov skontrolovať, či sa údaje zmenili, a ak áno - vytvoriť nový záznam s aktualizovanými hodnotami a starý záznam uložiť do histórie.
+
 Príklad kódu:
-```
+```sql 
 CREATE TABLE `Dim_Employee` (
     `Dim_EmployeeId` INT,
     `LastName` VARCHAR(20),
@@ -212,8 +219,9 @@ CURRENT_DATE sa používa na zaznamenanie dátumu aktuálnej zmeny v tabuľke.
 Rovnakým spôsobom sa vytvorí dimenzia **Dim_Customer**, ktorá obsahuje informácie o zákazníkoch, ako je jedinečný identifikátor zákazníka, meno, adresa, kontaktné údaje atď. Typ dimenzie je rovnaký - **typ 2 (SCD2)**, pretože sa predpokladá, že zákazníci môžu meniť informácie (napríklad adresu alebo kontaktné údaje) a mala by sa ukladať história zmien.
 
 Dimenzia **Dim_Date** je určená na ukladanie informácií o dátume nákupu skladby. Obsahuje odvodené údaje, ako je deň, mesiac, rok, deň v týždni (v textovom aj číselnom formáte) a štvrťrok. Štruktúra tejto dimenzie umožňuje podrobné časové analýzy, napríklad najvyšší počet predajov podľa dňa, mesiaca alebo roka. Z hľadiska SCD je táto dimenzia kategorizovaná ako **SCD typ 0**. To znamená, že existujúce záznamy v tejto dimenzii sú nemenné a obsahujú statické informácie.
+
 Príklad kódu:
-```
+```sql 
 CREATE TABLE `Dim_Date` AS
 SELECT DISTINCT
     ROW_NUMBER() OVER (ORDER BY CAST(i.`InvoiceDate` AS DATE)) AS `Dim_DateId`,
@@ -256,7 +264,7 @@ FROM `Invoice` i;
 Transformácia zahŕňala pridanie názvu mesiaca a dňa v týždni spolu s popisom typu dňa (víkend alebo nie). Boli pridané aj ďalšie typy dátumov. Dimenzie **Dim_Address** a **Dim_Track** majú rovnakú dimenziu **SCD typ 0** a boli vytvorené rovnakým spôsobom.
 
 Tabuľka **Fact_Invoice** obsahuje informácie o počte predaných skladieb, cene za 1 skladbu a celkovej sume za všetky predané kópie. Obsahuje aj odkazy na všetky dimenzie.
-```
+```sql 
 CREATE TABLE `Fact_Invoice` AS
 SELECT 
     il.`InvoiceLineId` AS `Fact_InvoiceId`,
@@ -282,7 +290,7 @@ ____
 ### **3.3 Load (Načítanie dát)**
 
 Po úspešnom vytvorení dimenzie a tabuľky faktov sa údaje načítali do konečnej štruktúry. Nakoniec sa exportované tabuľky vymazali, aby sa optimalizovalo využitie úložiska:
-```
+```sql 
 DROP TABLE IF EXISTS `InvoiceLine`;
 DROP TABLE IF EXISTS `Invoice`;
 DROP TABLE IF EXISTS `Artist`;
