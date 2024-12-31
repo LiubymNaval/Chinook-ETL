@@ -82,12 +82,18 @@ LEFT JOIN `Playlist` p ON pt.`PlaylistId` = p.`PlaylistId`;
 
 
 CREATE TABLE `Dim_Address` AS
-SELECT DISTINCT
-    ROW_NUMBER() OVER (ORDER BY i.`BillingCity`, i.`BillingState`, i.`BillingCountry`) AS `Dim_AddressId`,
-    i.`BillingCity`,
-    i.`BillingState`,
-    i.`BillingCountry`
-FROM `Invoice` i;
+SELECT 
+    ROW_NUMBER() OVER (ORDER BY `BillingCity`, `BillingState`, `BillingCountry`) AS `Dim_AddressId`,
+    `BillingCity`,
+    `BillingState`,
+    `BillingCountry`
+FROM (
+    SELECT DISTINCT
+        `BillingCity`,
+        `BillingState`,
+        `BillingCountry`
+    FROM `Invoice`
+) AS unique_addresses;
 
 CREATE TABLE `Dim_Date` AS
 SELECT DISTINCT
@@ -126,7 +132,7 @@ SELECT DISTINCT
         WHEN EXTRACT(DOW FROM i.`InvoiceDate`) IN (6, 7) THEN 'Víkend'
         ELSE 'Pracovný deň'
     END AS `IsWeekend`                          
-FROM `Invoice` i;
+FROM (SELECT DISTINCT DATE(`InvoiceDate`) AS `InvoiceDate` FROM `Invoice`) i;
 
 CREATE TABLE `Fact_Invoice` AS
 SELECT 
@@ -145,7 +151,9 @@ JOIN `Invoice` i ON il.`InvoiceId` = i.`InvoiceId`
 JOIN `Customer` c ON i.`CustomerId` = c.`CustomerId`
 JOIN `Employee` e ON c.`SupportRepId` = e.`EmployeeId`
 JOIN `Dim_Address` da ON i.`BillingCity` = da.`BillingCity`
-JOIN `Dim_Date` d ON DATE(i.`InvoiceDate`) = d.`Date`;
+JOIN `Dim_Date` d ON DATE(i.`InvoiceDate`) = d.`Date`
+ORDER BY `Fact_InvoiceId`;
+
 
 DROP TABLE IF EXISTS `InvoiceLine`;
 DROP TABLE IF EXISTS `Invoice`;
