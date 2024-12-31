@@ -104,7 +104,7 @@ V prvom kroku procesu ETL sa údaje extrahujú z externého zdroja a načítajú
 
 Základné príkazy SQL používané v procese **Extract**:
 
-1.	**CREATE DATABASE/SCHEMA** a **USE DATABASE/SCHEMA**
+#### 1.	**CREATE DATABASE/SCHEMA** a **USE DATABASE/SCHEMA**
 
 Príkazy **CREATE DATABASE/SCHEMA** sa používajú na vytvorenie databázy **CHINOOK** a jej schémy v programe **Snowflake**. A príkazy **USE DATABASE/SCHEMA** umožňujú používať vytvorenú databázu a schému na ďalšie transformácie.
 
@@ -116,7 +116,7 @@ USE DATABASE BISON_CHINOOK;
 USE SCHEMA BISON_CHINOOK_SCHEMA;
 ```
 
-2.	**CREATE TABLE**
+#### 2.	**CREATE TABLE**
 
 Príkaz **CREATE TABLE** sa používa na vytvorenie štruktúry tabuľky v databáze. Vytvorí sa napríklad tabuľka **Album**, ktorá bude obsahovať informácie o hudobných albumoch. Príkaz definuje štruktúru tabuľky vrátane názvov stĺpcov, ich dátových typov, obmedzení a kľúčov.
 
@@ -132,7 +132,7 @@ CREATE TABLE `Album`.
 ```
 Ostatné tabuľky sa vytvoria rovnakým spôsobom.
 
-3. **INSERT INTO**
+#### 3. **INSERT INTO**
 
 Príkaz **INSERT INTO** sa používa na pridanie údajov do tabuľky. Tento príkaz sa používa napríklad na vloženie údajov do tabuľky **Genre**, ktorá obsahuje informácie o hudobných žánroch.
 
@@ -176,7 +176,7 @@ ____
 V tomto kroku sa údaje získané z exporovaných tabuliek vyčistili, transformovali a obohatili. Hlavným cieľom bolo pripraviť dimenzie a tabuľku faktov, ktoré by umožnili jednoduché a efektívne analýzy.
 
 Dimenzie boli navrhnuté na poskytovanie kontextu pre faktovú tabuľku. Dimenzia **Dim_Employee** obsahuje informácie o zamestnancoch predajne vrátane údajov ako meno, priezvisko, pozícia, dátum povýšenia, e-mail a ich adresy.
-Typ **dimenzie 2 (SCD2)** - informácie o zamestnancovi sa môžu meniť (napr. zmena pracovnej pozície alebo adresy) a tieto zmeny sa musia uložiť. Preto sa pre tento typ dimenzie musia pridať ďalšie stĺpce:
+**Typ dimenzie 2 (SCD2)** - informácie o zamestnancovi sa môžu meniť (napr. zmena pracovnej pozície alebo adresy) a tieto zmeny sa musia uložiť. Preto sa pre tento typ dimenzie musia pridať ďalšie stĺpce:
 + **StartDate** - dátum začiatku záznamu.
 + **EndDate** - dátum ukončenia platnosti záznamu (zvyčajne NULL, ak je záznam aktuálny).
 + **IsCurrent** - príznak označujúci relevantnosť záznamu (napríklad 1 pre aktuálny záznam a 0 pre neaktuálny záznam).
@@ -259,7 +259,7 @@ SELECT DISTINCT
         WHEN EXTRACT(DOW FROM i.`InvoiceDate`) IN (6, 7) THEN 'Víkend'
         ELSE 'Pracovný deň'
     END AS `IsWeekend`                          
-FROM `Invoice` i;
+FROM (SELECT DISTINCT DATE(`InvoiceDate`) AS `InvoiceDate` FROM `Invoice`) i;
 ```
 Transformácia zahŕňala pridanie názvu mesiaca a dňa v týždni spolu s popisom typu dňa (víkend alebo nie). Boli pridané aj ďalšie typy dátumov. Dimenzie **Dim_Address** a **Dim_Track** majú rovnakú dimenziu **SCD typ 0** a boli vytvorené rovnakým spôsobom.
 
@@ -282,7 +282,8 @@ JOIN `Invoice` i ON il.`InvoiceId` = i.`InvoiceId`
 JOIN `Customer` c ON i.`CustomerId` = c.`CustomerId`
 JOIN `Employee` e ON c.`SupportRepId` = e.`EmployeeId`
 JOIN `Dim_Address` da ON i.`BillingCity` = da.`BillingCity`
-JOIN `Dim_Date` d ON DATE(i.`InvoiceDate`) = d.`Date`;
+JOIN `Dim_Date` d ON DATE(i.`InvoiceDate`) = d.`Date`
+ORDER BY `Fact_InvoiceId`;
 ```
 
 ____
