@@ -311,9 +311,100 @@ ____
 
 ## **4. Vizualizácia dát**
 
+Dashboard obsahuje 5 vizualizácií, ktoré poskytujú základný prehľad kľúčových metrikách a trendov týkajúcich sa hudobných skladieb, používateľov, zamestnancov a predajných skladieb. Tieto vizualizácie odpovedajú na dôležité otázky a umožňujú lepšie pochopiť preferencie používateľov, výkonnosť zamestnancov a celkové príjmy.
 
+<p align="center">
+  <a href="Chinook_dashboard_visualizations.png">
+    <img src="Chinook_dashboard_visualizations.png" alt="Obrázok 3 Dashboard Chinook datasetu">
+  </a>
+  <br>
+  Obrázok 3 Dashboard Chinook datasetu
+</p>
 
+____
 
+### **Graf 1: 10 najpredávanejších skladieb**
+
+Táto vizualizácia zobrazuje 10 najpredávanejších skladieb. Umožňuje identifikovať skladby, ktoré sú pre poslucháčov najzaujímavejšie. Pomocou tohto grafu môžete napríklad zistiť, že skladba **The Trooper** je medzi poslucháčmi jednou z najpredávanejších. Tieto informácie môžete použiť na vytvorenie odporúčaní pre poslucháčov alebo reklamných kampaní. 
+```sql 
+SELECT 
+    t.`Name` AS `TrackName`, 
+    SUM(f.`Quantity`) AS `TotalNumberOfSales`
+FROM `Fact_Invoice` f
+JOIN `Dim_Track` t ON f.`Dim_TrackId` = t.`Dim_TrackId`
+GROUP BY t.`Name`
+ORDER BY `TotalNumberOfSales` DESC
+LIMIT 10;
+```
+____
+
+### **Graf 2: Rozdelenie krajín podľa ziskovosti**
+
+Tento graf zobrazuje rozdelenie objednávok podľa krajiny, z ktorej pochádza najviac príjmov. Táto vizualizácia pomáha identifikovať cieľovú skupinu a najsolventnejší trh. Z tohto grafu vidíte, že krajiny ako USA a Kanada sú najpriaznivejšími regiónmi pre predaj. Tieto informácie sa dajú využiť na identifikáciu cieľového trhu alebo na určenie, v ktorých regiónoch treba zvýšiť reklamu, aby sa prilákali noví zákazníci.
+```sql 
+SELECT 
+    a.`BillingCountry` AS `CountryName`, 
+    SUM(f.`TotalAmount`) AS `TotalAmount`
+FROM `Fact_Invoice` f
+JOIN `Dim_Address` a ON f.`Dim_AddressId` = a.`Dim_AddressId`
+GROUP BY a.`BillingCountry`
+ORDER BY `TotalAmount` DESC;
+```
+____
+
+### **Graf 3: Dynamika predaja a príjmov podľa rokov**
+
+Tento graf zobrazuje dynamiku predaja a príjmov za 5 rokov. Z tohto grafu je zrejmé, že predaj v roku 2025 sa vrátil na počet predajov v roku 2021. Predaj však kriticky neklesol a vo všeobecnosti sa stav predaja javí ako stabilný. Tieto údaje možno použiť na analýzu efektívnosti a stavu predaja za 5 rokov. 
+```sql 
+SELECT 
+    d.`Year` AS `Year`, 
+    SUM(f.`TotalAmount`) AS `TotalAmount`
+FROM `Fact_Invoice` f
+JOIN `Dim_Date` d ON f.`Dim_DateId` = d.`Dim_DateId`
+GROUP BY d.`Year`
+ORDER BY d.`Year` ASC;
+```
+____
+
+### **Graf 4: Hodnotenie zamestnancov v závislosti od počtu spracovaných transakcií**
+
+Tento graf pomáha rozdeliť zamestnancov predajne podľa počtu spracovaných transakcií, čím umožňuje porovnať efektivitu zamestnancov. Na tomto grafe môžete vidieť, že **Jane** spracovala najväčší počet transakcií a je najefektívnejším a najhodnotnejším zamestnancom. Túto informáciu možno použiť na hodnotenie kvality práce zamestnancov predajne.
+```sql 
+SELECT 
+    e.`FirstName` AS `FirstName`, 
+    e.`LastName` AS `LastName`, 
+    COUNT(f.`Fact_InvoiceId`) AS `TotalProcessedInvoices`
+FROM `Fact_Invoice` f
+JOIN `Dim_Employee` e ON f.`Dim_EmployeeId` = e.`Dim_EmployeeId`
+GROUP BY e.`FirstName`, e.`LastName`
+ORDER BY `TotalProcessedInvoices` DESC;
+```
+____
+
+### **Graf 5: Najobľúbenejšie hudobné žánre podľa počtu predajov**
+
+Táto vizualizácia poskytuje zoznam najpopulárnejších hudobných žánrov na základe počtu predaných skladieb daného žánru. Z grafu je vidieť, že najpopulárnejším a najvyhľadávanejším žánrom je **Rock** a najpopulárnejším žánrom je **Science Fictio**. Tieto údaje možno využiť na zvýšenie odporúčaní napríklad žánru **Rock** a doplnenie databázy o nové skladby tohto žánru. 
+```sql 
+SELECT 
+    sub.`Genre` AS `GenreName`, 
+    SUM(sub.`Quantity`) AS `TotalNumberOfSales`
+FROM (
+    SELECT DISTINCT 
+        f.`Fact_InvoiceId`, 
+        t.`Genre`, 
+        f.`Quantity`
+    FROM `Fact_Invoice` f
+    JOIN `Dim_Track` t ON f.`Dim_TrackId` = t.`Dim_TrackId`
+) sub
+GROUP BY sub.`Genre`
+ORDER BY `TotalNumberOfSales` DESC;
+```
+
+Dashboard poskytuje komplexný pohľad na údaje a odpovedá na dôležité otázky o preferenciách poslucháčov a výkonnosti predaja. Vizualizácie umožňujú jednoduchú interpretáciu údajov a možno ich použiť na optimalizáciu odporúčacích systémov, vývoj marketingových stratégií, zvýšenie lojality poslucháčov a zlepšenie kvality hudobného obsahu.
+
+____
+
+**Autor**: Liubym Naval
 
 
 
