@@ -100,74 +100,24 @@ ____
 
 ### **3.1 Extract (Extrahovanie dát)**
 
-V prvom kroku procesu ETL sa údaje extrahujú z externého zdroja a načítajú do programu **Snowflake** pomocou príkazov SQL, ktoré sa vykonávajú priamo v **Worksheets**. To sa vykoná importovaním súboru **Chinook_MySql.sql** do **Worksheets** a následným vykonaním všetkých príkazov.
+Dáta zo zdrojového datasetu (formát .csv) boli najprv nahraté do Snowflake prostredníctvom interného stage úložiska s názvom BISON_Chinook_stage. Stage v Snowflake slúži ako dočasné úložisko na import alebo export dát. Vytvorenie stage bolo zabezpečené príkazom:
 
-Základné príkazy SQL používané v procese **Extract**:
-
-#### 1.	**CREATE DATABASE/SCHEMA** a **USE DATABASE/SCHEMA**
-
-Príkazy **CREATE DATABASE/SCHEMA** sa používajú na vytvorenie databázy **CHINOOK** a jej schémy v programe **Snowflake**. A príkazy **USE DATABASE/SCHEMA** umožňujú používať vytvorenú databázu a schému na ďalšie transformácie.
-
-Príklady príkazov:
-```sql 
-CREATE DATABASE BISON_CHINOOK;
-CREATE SCHEMA BISON_CHINOOK_SCHEMA;
-USE DATABASE BISON_CHINOOK;
-USE SCHEMA BISON_CHINOOK_SCHEMA;
+Príklad kódu:
+```sql
+CREATE OR REPLACE STAGE BISON_Chinook_stage
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"');
 ```
 
-#### 2.	**CREATE TABLE**
+Do stage boli nahrané súbory s údajmi o skladbách, zákazníkoch, príjmy, zamestnancoch, žánroch skladieb, umelcoch atď. Dáta boli importované do tabuliek pomocou príkazu COPY INTO. Pre každú tabuľku sa použil podobný príkaz:
 
-Príkaz **CREATE TABLE** sa používa na vytvorenie štruktúry tabuľky v databáze. Vytvorí sa napríklad tabuľka **Album**, ktorá bude obsahovať informácie o hudobných albumoch. Príkaz definuje štruktúru tabuľky vrátane názvov stĺpcov, ich dátových typov, obmedzení a kľúčov.
-
-Príklad príkazu:
-```sql 
-CREATE TABLE `Album`.
-(
-    `AlbumId` INT NOT NULL,
-    `Title` VARCHAR(160) NOT NULL,
-    `ArtistId` INT NOT NULL,
-    CONSTRAINT `PK_Album` PRIMARY KEY (`AlbumId`)
-);
+```sql
+COPY INTO `Album`
+FROM @BISON_Chinook_stage/Album.csv
+FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1)
+ON_ERROR = 'CONTINUE'; 
 ```
-Ostatné tabuľky sa vytvoria rovnakým spôsobom.
 
-#### 3. **INSERT INTO**
-
-Príkaz **INSERT INTO** sa používa na pridanie údajov do tabuľky. Tento príkaz sa používa napríklad na vloženie údajov do tabuľky **Genre**, ktorá obsahuje informácie o hudobných žánroch.
-
-Príklad príkazu:
-```sql 
-INSERT INTO `Genre` (`GenreId`, `Name`) VALUES
-    (1, 'Rock'),
-    (2, „Jazz“),
-    (3, „Metal“),
-    (4, „Alternative & Punk“),
-    (5, 'Rock And Roll'),
-    (6, „Blues“),
-    (7, „Lati“),
-    (8, „Reggae“),
-    (9, „Pop“),
-    (10, „Soundtrack“),
-    (11, „Bossa Nova“),
-    (12, „Easy Listening“),
-    (13, „Heavy Metal“),
-    (14, „R&B/Soul“),
-    (15, „Electronica/Dance“),
-    (16, „World“),
-    (17, „Hip Hop/Rap“),
-    (18, „Science Fictio“),
-    (19, „Televízne programy“),
-    (20, „Sci Fi & Fantasy“),
-    (21, „Dráma“),
-    (22, „Komédie“),
-    (23, „Alternatívne“),
-    (24, „Klasika“),
-    (25, „Opera“);
-```
-Zvyšné tabuľky sa vyplnia rovnakým spôsobom.
-
-Týmto spôsobom boli vytvorené štruktúry tabuliek databázy **CHINOOK** a naplnené údajmi.
+V prípade nekonzistentných záznamov bol použitý parameter ON_ERROR = 'CONTINUE', ktorý zabezpečil pokračovanie procesu bez prerušenia pri chybách.
 
 ____
 
@@ -214,7 +164,7 @@ SELECT
     TRUE AS `IsCurrent`
 FROM `Employee` e;
 ```
-CURRENT_DATE sa používa na zaznamenanie dátumu aktuálnej zmeny v tabuľke.
+**CURRENT_DATE** sa používa na zaznamenanie dátumu aktuálnej zmeny v tabuľke.
 
 Rovnakým spôsobom sa vytvorí dimenzia **Dim_Customer**, ktorá obsahuje informácie o zákazníkoch, ako je jedinečný identifikátor zákazníka, meno, adresa, kontaktné údaje atď. Typ dimenzie je rovnaký - **typ 2 (SCD2)**, pretože sa predpokladá, že zákazníci môžu meniť informácie (napríklad adresu alebo kontaktné údaje) a mala by sa ukladať história zmien.
 
@@ -305,7 +255,7 @@ DROP TABLE IF EXISTS `Track`;
 DROP TABLE IF EXISTS `PlaylistTrack`;
 ```
 
-Proces ETL v softvéri **Snowflake** umožnil prepracovať nespracované údaje zo súboru **Chinook_MySql** do viacrozmerného modelu typu hviezda. Tento proces zahŕňal čistenie, obohacovanie a reorganizáciu údajov. Výsledný model umožňuje analyzovať preferencie poslucháčov a kúpnu silu a poskytuje základ pre vizualizácie a reporty.
+ETL proces v **Snowflake** umožnil spracovanie pôvodných dát z **.csv** formátu do viacdimenzionálneho modelu typu hviezda. Tento proces zahŕňal čistenie, obohacovanie a reorganizáciu údajov. Výsledný model umožňuje analyzovať preferencie poslucháčov a kúpnu silu a poskytuje základ pre vizualizácie a reporty.
 
 ____
 
