@@ -1,6 +1,6 @@
 # **ETL proces datasetu Chinook**
 
-Toto úložisko obsahuje implementáciu procesu ETL spoločnosti Snowflake na analýzu údajov zo súboru údajov **Chinook**. Cieľom projektu je analyzovať údaje hudobného obchodu Chinook s cieľom pochopiť vzorce predaja, správanie používateľov, popularitu hudobných žánrov a výkonnosť zamestnancov. Proces ETL pomôže pripraviť údaje na viacrozmernú analýzu a vizualizáciu kľúčových ukazovateľov.
+Toto úložisko obsahuje implementáciu procesu ETL spoločnosti Snowflake na analýzu údajov zo súboru údajov **Chinook**. Cieľom projektu je analyzovať údaje hudobného obchodu **Chinook** s cieľom pochopiť vzorce predaja, správanie používateľov, popularitu hudobných žánrov a výkonnosť zamestnancov. Proces ETL pomôže pripraviť údaje na viacrozmernú analýzu a vizualizáciu kľúčových metrik.
 
 ____
 
@@ -100,15 +100,14 @@ ____
 
 ### **3.1 Extract (Extrahovanie dát)**
 
-Dáta zo zdrojového datasetu (formát .csv) boli najprv nahraté do Snowflake prostredníctvom interného stage úložiska s názvom BISON_Chinook_stage. Stage v Snowflake slúži ako dočasné úložisko na import alebo export dát. Vytvorenie stage bolo zabezpečené príkazom:
+Dáta zo zdrojového datasetu (formát .csv) boli najprv nahraté do Snowflake prostredníctvom interného stage úložiska s názvom **BISON_Chinook_stage**. Stage v Snowflake slúži ako dočasné úložisko na import alebo export dát. Vytvorenie stage bolo zabezpečené príkazom:
 
-Príklad kódu:
 ```sql
 CREATE OR REPLACE STAGE BISON_Chinook_stage
 FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"');
 ```
 
-Do stage boli nahrané súbory s údajmi o skladbách, zákazníkoch, príjmy, zamestnancoch, žánroch skladieb, umelcoch atď. Dáta boli importované do tabuliek pomocou príkazu COPY INTO. Pre každú tabuľku sa použil podobný príkaz:
+Do stage boli nahrané súbory s údajmi o skladbách, zákazníkoch, príjmy, zamestnancoch, žánroch skladieb, umelcoch atď. Dáta boli importované do tabuliek pomocou príkazu **COPY INTO**. Pre každú tabuľku sa použil podobný príkaz:
 
 ```sql
 COPY INTO `Album`
@@ -117,7 +116,7 @@ FILE_FORMAT = (TYPE = 'CSV' FIELD_OPTIONALLY_ENCLOSED_BY = '"' SKIP_HEADER = 1)
 ON_ERROR = 'CONTINUE'; 
 ```
 
-V prípade nekonzistentných záznamov bol použitý parameter ON_ERROR = 'CONTINUE', ktorý zabezpečil pokračovanie procesu bez prerušenia pri chybách.
+V prípade nekonzistentných záznamov bol použitý parameter **ON_ERROR = 'CONTINUE'**, ktorý zabezpečil pokračovanie procesu bez prerušenia pri chybách.
 
 ____
 
@@ -126,7 +125,7 @@ ____
 V tomto kroku sa údaje získané z exporovaných tabuliek vyčistili, transformovali a obohatili. Hlavným cieľom bolo pripraviť dimenzie a tabuľku faktov, ktoré by umožnili jednoduché a efektívne analýzy.
 
 Dimenzie boli navrhnuté na poskytovanie kontextu pre faktovú tabuľku. Dimenzia **Dim_Employee** obsahuje informácie o zamestnancoch predajne vrátane údajov ako meno, priezvisko, pozícia, dátum povýšenia, e-mail a ich adresy.
-**Typ dimenzie 2 (SCD2)** - informácie o zamestnancovi sa môžu meniť (napr. zmena pracovnej pozície alebo adresy) a tieto zmeny sa musia uložiť. Preto sa pre tento typ dimenzie musia pridať ďalšie stĺpce:
+Typ dimenzie 2 (SCD2) - informácie o zamestnancovi sa môžu meniť (napr. zmena pracovnej pozície alebo adresy) a tieto zmeny sa musia uložiť. Preto sa pre tento typ dimenzie musia pridať ďalšie stĺpce:
 + **StartDate** - dátum začiatku záznamu.
 + **EndDate** - dátum ukončenia platnosti záznamu (zvyčajne NULL, ak je záznam aktuálny).
 + **IsCurrent** - príznak označujúci relevantnosť záznamu (napríklad 1 pre aktuálny záznam a 0 pre neaktuálny záznam).
@@ -166,9 +165,9 @@ FROM `Employee` e;
 ```
 **CURRENT_DATE** sa používa na zaznamenanie dátumu aktuálnej zmeny v tabuľke.
 
-Rovnakým spôsobom sa vytvorí dimenzia **Dim_Customer**, ktorá obsahuje informácie o zákazníkoch, ako je jedinečný identifikátor zákazníka, meno, adresa, kontaktné údaje atď. Typ dimenzie je rovnaký - **typ 2 (SCD2)**, pretože sa predpokladá, že zákazníci môžu meniť informácie (napríklad adresu alebo kontaktné údaje) a mala by sa ukladať história zmien.
+Rovnakým spôsobom sa vytvorí dimenzia **Dim_Customer**, ktorá obsahuje informácie o zákazníkoch, ako je jedinečný identifikátor zákazníka, meno, adresa, kontaktné údaje atď. Typ dimenzie je rovnaký - typ 2 (SCD2), pretože sa predpokladá, že zákazníci môžu meniť informácie (napríklad adresu alebo kontaktné údaje) a mala by sa ukladať história zmien.
 
-Dimenzia **Dim_Date** je určená na ukladanie informácií o dátume nákupu skladby. Obsahuje odvodené údaje, ako je deň, mesiac, rok, deň v týždni (v textovom aj číselnom formáte) a štvrťrok. Štruktúra tejto dimenzie umožňuje podrobné časové analýzy, napríklad najvyšší počet predajov podľa dňa, mesiaca alebo roka. Z hľadiska SCD je táto dimenzia kategorizovaná ako **SCD typ 0**. To znamená, že existujúce záznamy v tejto dimenzii sú nemenné a obsahujú statické informácie.
+Dimenzia **Dim_Date** je určená na ukladanie informácií o dátume nákupu skladby. Obsahuje odvodené údaje, ako je deň, mesiac, rok, deň v týždni (v textovom aj číselnom formáte) a štvrťrok. Štruktúra tejto dimenzie umožňuje podrobné časové analýzy, napríklad najvyšší počet predajov podľa dňa, mesiaca alebo roka. Z hľadiska SCD je táto dimenzia kategorizovaná ako SCD typ 0. To znamená, že existujúce záznamy v tejto dimenzii sú nemenné a obsahujú statické informácie.
 
 Príklad kódu:
 ```sql 
@@ -211,7 +210,7 @@ SELECT DISTINCT
     END AS `IsWeekend`                          
 FROM (SELECT DISTINCT DATE(`InvoiceDate`) AS `InvoiceDate` FROM `Invoice`) i;
 ```
-Transformácia zahŕňala pridanie názvu mesiaca a dňa v týždni spolu s popisom typu dňa (víkend alebo nie). Boli pridané aj ďalšie typy dátumov. Dimenzie **Dim_Address** a **Dim_Track** majú rovnakú dimenziu **SCD typ 0** a boli vytvorené rovnakým spôsobom.
+Transformácia zahŕňala pridanie názvu mesiaca a dňa v týždni spolu s popisom typu dňa (víkend alebo nie). Boli pridané aj ďalšie typy dátumov. Dimenzie **Dim_Address** a **Dim_Track** majú rovnakú dimenziu SCD typ 0 a boli vytvorené rovnakým spôsobom.
 
 Tabuľka **Fact_Invoice** obsahuje informácie o počte predaných skladieb, cene za 1 skladbu a celkovej sume za všetky predané kópie. Obsahuje aj odkazy na všetky dimenzie.
 ```sql 
@@ -255,7 +254,7 @@ DROP TABLE IF EXISTS `Track`;
 DROP TABLE IF EXISTS `PlaylistTrack`;
 ```
 
-ETL proces v **Snowflake** umožnil spracovanie pôvodných dát z **.csv** formátu do viacdimenzionálneho modelu typu hviezda. Tento proces zahŕňal čistenie, obohacovanie a reorganizáciu údajov. Výsledný model umožňuje analyzovať preferencie poslucháčov a kúpnu silu a poskytuje základ pre vizualizácie a reporty.
+ETL proces v Snowflake umožnil spracovanie pôvodných dát z **.csv** formátu do viacdimenzionálneho modelu typu hviezda. Tento proces zahŕňal čistenie, obohacovanie a reorganizáciu údajov. Výsledný model umožňuje analyzovať preferencie poslucháčov a kúpnu silu a poskytuje základ pre vizualizácie a reporty.
 
 ____
 
