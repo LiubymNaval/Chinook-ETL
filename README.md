@@ -332,7 +332,7 @@ ____
 
 ### **Graf 5: Najobľúbenejšie hudobné žánre podľa počtu predajov**
 
-Táto vizualizácia poskytuje zoznam najpopulárnejších hudobných žánrov na základe počtu predaných skladieb daného žánru. Z grafu je vidieť, že najpopulárnejším a najvyhľadávanejším žánrom je **Rock** a najpopulárnejším žánrom je **Science Fictio**. Tieto údaje možno využiť na zvýšenie odporúčaní napríklad žánru **Rock** a doplnenie databázy o nové skladby tohto žánru. 
+Táto vizualizácia poskytuje zoznam najpopulárnejších hudobných žánrov na základe počtu predaných skladieb daného žánru.  Z grafu vyplýva, že najobľúbenejším a najvyhľadávanejším žánrom je **Rock** a najneobľúbenejším žánrom je **Science Fictio**.  Tieto údaje možno využiť na zvýšenie odporúčaní napríklad žánru **Rock** a doplnenie databázy o nové skladby tohto žánru. 
 ```sql 
 SELECT 
     sub.`Genre` AS `GenreName`, 
